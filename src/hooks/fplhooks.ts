@@ -47,11 +47,11 @@ const useFpl = (week: number) => {
           const data = await fetch(`/api/history?entry=${manager.entry}`);
           const history = await data.json();
           const transfersCost =
-            manager.entry == 10720565
+            manager.entry === 10720565
               ? history.current[gameweek]?.event_transfers_cost
               : history.current[gameweek - 1]?.event_transfers_cost;
           const points =
-            manager.entry == 10720565
+            manager.entry === 10720565
               ? history.current[gameweek]?.points
               : history.current[gameweek - 1]?.points;
           return {
@@ -74,6 +74,7 @@ const useFpl = (week: number) => {
             position: index + 1,
           };
         });
+      console.log(sorted);
       setWeekDetails(sorted);
       setIsFetching(false);
     };

@@ -56,8 +56,10 @@ const Home = () => {
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 tracking-tight">
             Fantasy Premier League
           </h1>
+          <p className="text-gray-300 mt-4 text-lg mb-1">
+            2025/26 Season Gameweeks
+          </p>
           <div className="w-24 h-1 bg-gradient-to-r from-green-400 to-blue-500 mx-auto rounded-full"></div>
-          <p className="text-gray-300 mt-4 text-lg">2025/26 Season Gameweeks</p>
         </div>
 
         {/* Stats Cards
