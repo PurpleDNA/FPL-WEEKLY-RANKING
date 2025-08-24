@@ -2,9 +2,10 @@
 import { Calendar, Play, TrendingUp, Trophy, Users } from "lucide-react";
 import { useNavigate } from "react-router";
 import useFpl from "../hooks/fplhooks";
+import FPLSkeleton from "./Skeleton";
 
 const Home = () => {
-  const { gameweeks } = useFpl(2);
+  const { gameweeks, isLoading } = useFpl(2);
 
   const navigate = useNavigate();
   // console.log(seasonDetails);
@@ -12,11 +13,11 @@ const Home = () => {
   const getGameweekIcon = (status: string) => {
     switch (status) {
       case "completed":
-        return <Trophy className="w-full h-full text-green-400" />;
+        return <Trophy className=" text-green-400" size={32} />;
       case "current":
-        return <Play className="w-full h-full text-yellow-400" />;
+        return <Play className=" text-yellow-400" size={32} />;
       default:
-        return <Calendar className="w-full h-full text-gray-400" />;
+        return <Calendar className=" text-gray-400" size={32} />;
     }
   };
 
@@ -122,77 +123,81 @@ const Home = () => {
         </div>
 
         <div className="space-y-3">
-          {gameweeks.map((gameweek) => (
-            <div
-              key={gameweek.number}
-              onClick={() => handleGameweekClick(gameweek.number)}
-              className={`relative overflow-hidden rounded-2xl border border-white/10 backdrop-blur-sm bg-gradient-to-r hover:scale-[1.02] hover:border-white/20 transition-all duration-300                           shadow-lg hover:shadow-xl cursor-pointer group`}
-            >
-              <div className="p-4 sm:p-6 flex items-center justify-between">
-                {/* Left Section */}
-                <div className="flex items-center space-x-4 flex-1">
-                  {/* Gameweek Number */}
-                  <div className="flex-shrink-0">
-                    <div
-                      className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center font-bold text-lg sm:text-2xl ${
-                        gameweek.status === "current"
-                          ? "bg-gradient-to-br from-yellow-400/30 to-amber-300/20 text-yellow-300 border-2 border-yellow-400/30"
-                          : gameweek.status === "future" ||
-                            gameweek.status === "next"
-                          ? "bg-gradient-to-br from-green-400/20 to-emerald-300/15 text-green-300 border border-green-400/20"
-                          : "bg-slate-700/30 text-gray-300 border border-gray-600/20"
-                      }`}
-                    >
-                      {gameweek.number}
+          {isLoading ? (
+            <FPLSkeleton />
+          ) : (
+            gameweeks.map((gameweek) => (
+              <div
+                key={gameweek.number}
+                onClick={() => handleGameweekClick(gameweek.number)}
+                className={`relative overflow-hidden rounded-2xl border border-white/10 backdrop-blur-sm bg-gradient-to-r hover:scale-[1.02] hover:border-white/20 transition-all duration-300                           shadow-lg hover:shadow-xl cursor-pointer group`}
+              >
+                <div className="p-4 sm:p-6 flex items-center justify-between">
+                  {/* Left Section */}
+                  <div className="flex items-center space-x-4 flex-1">
+                    {/* Gameweek Number */}
+                    <div className="flex-shrink-0">
+                      <div
+                        className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center font-bold text-lg sm:text-2xl ${
+                          gameweek.status === "current"
+                            ? "bg-gradient-to-br from-yellow-400/30 to-amber-300/20 text-yellow-300 border-2 border-yellow-400/30"
+                            : gameweek.status === "future" ||
+                              gameweek.status === "next"
+                            ? "bg-gradient-to-br from-green-400/20 to-emerald-300/15 text-green-300 border border-green-400/20"
+                            : "bg-slate-700/30 text-gray-300 border border-gray-600/20"
+                        }`}
+                      >
+                        {gameweek.number}
+                      </div>
+                    </div>
+
+                    {/* Status Icon */}
+                    <div className="flex-shrink-0">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10">
+                        {getGameweekIcon(gameweek.status)}
+                      </div>
+                    </div>
+
+                    {/* Gameweek Info */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg sm:text-2xl font-bold text-white truncate leading-tight group-hover:text-green-300 transition-colors">
+                        Gameweek {gameweek.number}
+                      </h3>
+                      <p className="text-sm sm:text-base text-gray-300 truncate leading-tight">
+                        {gameweek.deadline}
+                      </p>
                     </div>
                   </div>
 
-                  {/* Status Icon */}
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10">
-                      {getGameweekIcon(gameweek.status)}
+                  {/* Right Section */}
+                  <div className="flex items-center space-x-4 text-right">
+                    {/* Status */}
+                    <div className="hidden sm:block w-20">
+                      <span
+                        className={`text-sm font-semibold px-2 py-1 rounded-full ${
+                          gameweek.status === "current"
+                            ? "bg-yellow-400/20 text-yellow-300"
+                            : gameweek.status === "completed"
+                            ? "bg-green-400/20 text-green-300"
+                            : "bg-gray-600/20 text-gray-400"
+                        }`}
+                      >
+                        {getStatusText(gameweek.status)}
+                      </span>
+                    </div>
+
+                    {/* Arrow */}
+                    <div className="w-8 h-8 flex items-center justify-center">
+                      <TrendingUp className="w-5 h-5 text-gray-400 group-hover:text-green-400 group-hover:translate-x-1 transition-all duration-200" />
                     </div>
                   </div>
-
-                  {/* Gameweek Info */}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-lg sm:text-2xl font-bold text-white truncate leading-tight group-hover:text-green-300 transition-colors">
-                      Gameweek {gameweek.number}
-                    </h3>
-                    <p className="text-sm sm:text-base text-gray-300 truncate leading-tight">
-                      {gameweek.deadline}
-                    </p>
-                  </div>
                 </div>
 
-                {/* Right Section */}
-                <div className="flex items-center space-x-4 text-right">
-                  {/* Status */}
-                  <div className="hidden sm:block w-20">
-                    <span
-                      className={`text-sm font-semibold px-2 py-1 rounded-full ${
-                        gameweek.status === "current"
-                          ? "bg-yellow-400/20 text-yellow-300"
-                          : gameweek.status === "completed"
-                          ? "bg-green-400/20 text-green-300"
-                          : "bg-gray-600/20 text-gray-400"
-                      }`}
-                    >
-                      {getStatusText(gameweek.status)}
-                    </span>
-                  </div>
-
-                  {/* Arrow */}
-                  <div className="w-8 h-8 flex items-center justify-center">
-                    <TrendingUp className="w-5 h-5 text-gray-400 group-hover:text-green-400 group-hover:translate-x-1 transition-all duration-200" />
-                  </div>
-                </div>
+                {/* Bottom gradient line */}
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
               </div>
-
-              {/* Bottom gradient line */}
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
         {/* Footer */}

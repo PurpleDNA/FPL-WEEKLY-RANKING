@@ -33,6 +33,7 @@ const useFpl = (week: number) => {
   const [standingsList, setStandingsList] = useState<Standings[]>([]);
   const [weekDetails, setWeekDetails] = useState<WeekDetails[]>([]);
   const [isFetching, setIsFetching] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [seasonDetails, setSeasonDetails] = useState<any[]>([]);
   // const { data: seasonDetails } = useQuery({
   //   queryKey: ["seasonDetails"],
@@ -44,9 +45,11 @@ const useFpl = (week: number) => {
 
   useEffect(() => {
     const fetchDetails = async () => {
+      setIsLoading(true);
       const res = await fetch("/api/seasonDetails");
       const data = await res.json();
       setSeasonDetails(data);
+      setIsLoading(false);
     };
     fetchDetails();
   }, []);
@@ -122,6 +125,7 @@ const useFpl = (week: number) => {
     weekDetails,
     isFetching,
     gameweeks,
+    isLoading,
   };
 };
 
