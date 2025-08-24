@@ -61,26 +61,6 @@ const useFpl = (week: number = 0) => {
   }, []);
 
   useEffect(() => {
-    if (!seasonDetails) return;
-    setGameweks(
-      seasonDetails.map((gw, index) => ({
-        number: index + 1,
-        status: gw.is_previous
-          ? "previous"
-          : gw.finished
-          ? "completed"
-          : gw.is_current
-          ? "current"
-          : gw.is_next
-          ? "next"
-          : "future",
-        deadline: formatDate(gw.deadline_time),
-      }))
-    );
-    setIsLoading(false);
-  }, [seasonDetails]);
-
-  useEffect(() => {
     const fetchData = async () => {
       await fetch("/api/standings?leagueId=1863884").then(async (res) => {
         const parsed = await res.json();
@@ -132,6 +112,26 @@ const useFpl = (week: number = 0) => {
 
     fetchGameweekDetails(week);
   }, [standingsList, week]);
+
+  useEffect(() => {
+    if (seasonDetails.length === 0) return;
+    setGameweks(
+      seasonDetails.map((gw, index) => ({
+        number: index + 1,
+        status: gw.is_previous
+          ? "previous"
+          : gw.finished
+          ? "completed"
+          : gw.is_current
+          ? "current"
+          : gw.is_next
+          ? "next"
+          : "future",
+        deadline: formatDate(gw.deadline_time),
+      }))
+    );
+    setIsLoading(false);
+  }, [seasonDetails]);
 
   return {
     standingsList,
