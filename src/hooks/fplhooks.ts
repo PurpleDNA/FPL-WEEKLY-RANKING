@@ -48,11 +48,11 @@ const useFpl = (week: number) => {
           const history = await data.json();
           const transfersCost =
             manager.entry === 10720565
-              ? history.current[gameweek]?.event_transfers_cost
+              ? history.current[gameweek - 2]?.event_transfers_cost
               : history.current[gameweek - 1]?.event_transfers_cost;
           const points =
             manager.entry === 10720565
-              ? history.current[gameweek]?.points
+              ? history.current[gameweek - 2]?.points
               : history.current[gameweek - 1]?.points;
           return {
             id: manager.id,
