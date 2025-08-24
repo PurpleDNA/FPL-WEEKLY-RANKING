@@ -5,10 +5,12 @@ import useFpl from "../hooks/fplhooks";
 import FPLSkeleton from "./Skeleton";
 
 const Home = () => {
-  const { gameweeks, isLoading } = useFpl(2);
+  const { gameweeks, isLoading } = useFpl();
+  const prevGameweek = gameweeks.find((gw) => gw.status === "previous");
+  const { weekDetails } = useFpl(prevGameweek?.number);
+  console.log(prevGameweek);
 
   const navigate = useNavigate();
-  // console.log(seasonDetails);
 
   const getGameweekIcon = (status: string) => {
     switch (status) {
@@ -35,6 +37,7 @@ const Home = () => {
   const getStatusText = (status: string) => {
     switch (status) {
       case "completed":
+      case "previous":
         return "Completed";
       case "current":
         return "Current";
@@ -61,15 +64,18 @@ const Home = () => {
           </p>
           <div className="w-24 h-1 bg-gradient-to-r from-green-400 to-blue-500 mx-auto rounded-full"></div>
         </div>
-
-        {/* Stats Cards
+        <h2 className="font-bold text-white text-lg mb-1">Stats </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
             <div className="flex items-center space-x-3">
               <Trophy className="w-8 h-8 text-green-400" />
               <div>
-                <p className="text-2xl font-bold text-white">15</p>
-                <p className="text-sm text-gray-400">Completed</p>
+                <p className="text-sm text-gray-400">
+                  Gameweek {prevGameweek?.number} champion
+                </p>
+                <p className="text-2xl font-bold text-white">
+                  {weekDetails[0]?.managerName}
+                </p>
               </div>
             </div>
           </div>
@@ -78,13 +84,15 @@ const Home = () => {
             <div className="flex items-center space-x-3">
               <Play className="w-8 h-8 text-yellow-400" />
               <div>
-                <p className="text-2xl font-bold text-white">1</p>
-                <p className="text-sm text-gray-400">Current</p>
+                <p className="text-sm text-gray-400">Current Gameweek</p>
+                <p className="text-2xl font-bold text-white">
+                  {gameweeks.find((gw) => gw.status === "current")?.number}
+                </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+          {/* <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
             <div className="flex items-center space-x-3">
               <Calendar className="w-8 h-8 text-gray-400" />
               <div>
@@ -92,9 +100,8 @@ const Home = () => {
                 <p className="text-sm text-gray-400">Upcoming</p>
               </div>
             </div>
-          </div>
-        </div> */}
-
+          </div> */}
+        </div>
         {/* Column Headers */}
         <div className="mb-4 px-2">
           <div className="flex items-center justify-between">
@@ -121,7 +128,6 @@ const Home = () => {
             </div>
           </div>
         </div>
-
         <div className="space-y-3">
           {isLoading ? (
             <FPLSkeleton />
@@ -177,7 +183,8 @@ const Home = () => {
                         className={`text-sm font-semibold px-2 py-1 rounded-full ${
                           gameweek.status === "current"
                             ? "bg-yellow-400/20 text-yellow-300"
-                            : gameweek.status === "completed"
+                            : gameweek.status === "completed" ||
+                              gameweek.status === "previous"
                             ? "bg-green-400/20 text-green-300"
                             : "bg-gray-600/20 text-gray-400"
                         }`}
@@ -199,7 +206,6 @@ const Home = () => {
             ))
           )}
         </div>
-
         {/* Footer */}
         <div className="mt-8 text-center">
           <div className="inline-flex items-center space-x-2 bg-white/5 backdrop-blur-sm rounded-full px-6 py-3 border border-white/10">

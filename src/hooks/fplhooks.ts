@@ -29,7 +29,7 @@ interface WeekDetails {
   position: number;
 }
 
-const useFpl = (week: number) => {
+const useFpl = (week: number = 0) => {
   const [standingsList, setStandingsList] = useState<Standings[]>([]);
   const [weekDetails, setWeekDetails] = useState<WeekDetails[]>([]);
   const [isFetching, setIsFetching] = useState<boolean>(true);
@@ -55,14 +55,14 @@ const useFpl = (week: number) => {
   }, []);
   const gameweeks = seasonDetails.map((gw, index) => ({
     number: index + 1,
-    status: gw.finished
+    status: gw.is_previous
+      ? "previous"
+      : gw.finished
       ? "completed"
       : gw.is_current
       ? "current"
       : gw.is_next
       ? "next"
-      : gw.is_previous
-      ? "previous"
       : "future",
     deadline: formatDate(gw.deadline_time),
   }));
