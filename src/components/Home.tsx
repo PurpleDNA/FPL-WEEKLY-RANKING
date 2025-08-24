@@ -3,18 +3,19 @@ import { Calendar, Play, TrendingUp, Trophy, Users } from "lucide-react";
 import { useNavigate } from "react-router";
 import useFpl from "../hooks/fplhooks";
 import FPLSkeleton from "./Skeleton";
+import LoadingSkeleton from "./LoadingSkeleton";
 
 const Home = () => {
   const { gameweeks, isLoading } = useFpl();
   const prevGameweek = gameweeks.find((gw) => gw.status === "previous");
   const { weekDetails } = useFpl(prevGameweek?.number);
-  console.log(prevGameweek);
 
   const navigate = useNavigate();
 
   const getGameweekIcon = (status: string) => {
     switch (status) {
       case "completed":
+      case "previous":
         return <Trophy className=" text-green-400" size={32} />;
       case "current":
         return <Play className=" text-yellow-400" size={32} />;
@@ -74,7 +75,11 @@ const Home = () => {
                   Gameweek {prevGameweek?.number} champion
                 </p>
                 <p className="text-2xl font-bold text-white">
-                  {weekDetails[0]?.managerName}
+                  {weekDetails[0]?.managerName ? (
+                    weekDetails[0]?.managerName
+                  ) : (
+                    <LoadingSkeleton count={1} />
+                  )}
                 </p>
               </div>
             </div>

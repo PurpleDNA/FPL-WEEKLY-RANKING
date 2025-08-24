@@ -29,12 +29,19 @@ interface WeekDetails {
   position: number;
 }
 
+interface gws {
+  number: number;
+  status: "future" | "next" | "current" | "completed" | "previous";
+  deadline: string;
+}
+
 const useFpl = (week: number = 0) => {
   const [standingsList, setStandingsList] = useState<Standings[]>([]);
   const [weekDetails, setWeekDetails] = useState<WeekDetails[]>([]);
   const [isFetching, setIsFetching] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [seasonDetails, setSeasonDetails] = useState<any[]>([]);
+  const [gameweeks, setGameweks] = useState<gws[]>([]);
   // const { data: seasonDetails } = useQuery({
   //   queryKey: ["seasonDetails"],
   //   queryFn: async () => {
@@ -49,23 +56,29 @@ const useFpl = (week: number = 0) => {
       const res = await fetch("/api/seasonDetails");
       const data = await res.json();
       setSeasonDetails(data);
-      setIsLoading(false);
     };
     fetchDetails();
   }, []);
-  const gameweeks = seasonDetails.map((gw, index) => ({
-    number: index + 1,
-    status: gw.is_previous
-      ? "previous"
-      : gw.finished
-      ? "completed"
-      : gw.is_current
-      ? "current"
-      : gw.is_next
-      ? "next"
-      : "future",
-    deadline: formatDate(gw.deadline_time),
-  }));
+
+  useEffect(() => {
+    if (!seasonDetails) return;
+    setGameweks(
+      seasonDetails.map((gw, index) => ({
+        number: index + 1,
+        status: gw.is_previous
+          ? "previous"
+          : gw.finished
+          ? "completed"
+          : gw.is_current
+          ? "current"
+          : gw.is_next
+          ? "next"
+          : "future",
+        deadline: formatDate(gw.deadline_time),
+      }))
+    );
+    setIsLoading(false);
+  }, [seasonDetails]);
 
   useEffect(() => {
     const fetchData = async () => {
