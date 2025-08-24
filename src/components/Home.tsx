@@ -1,6 +1,7 @@
 // import { Trophy, Play, Calendar, TrendingUp, Users } from "lucide-react";
 import { TrendingUp, Users } from "lucide-react";
 import { useNavigate } from "react-router";
+import useFpl from "../hooks/fplhooks";
 
 const Home = () => {
   const gameweeks = Array.from({ length: 38 }, (_, index) => ({
@@ -10,6 +11,8 @@ const Home = () => {
   }));
 
   const navigate = useNavigate();
+  const { seasonDetails } = useFpl(2);
+  console.log(seasonDetails);
 
   //   const getGameweekIcon = (status) => {
   //     switch (status) {
@@ -45,7 +48,6 @@ const Home = () => {
   //   };
 
   const handleGameweekClick = (gameweekNumber: number) => {
-    // This would be your router navigation
     navigate(`/gameweek/${gameweekNumber}`);
   };
 
@@ -54,7 +56,7 @@ const Home = () => {
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 tracking-tight">
-            Fantasy Premier League
+            5H5K Premier League
           </h1>
           <p className="text-gray-300 mt-4 text-lg mb-1">
             2025/26 Season Gameweeks

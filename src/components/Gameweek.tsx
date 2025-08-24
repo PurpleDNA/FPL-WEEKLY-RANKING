@@ -49,7 +49,7 @@ const Gameweek = () => {
         <div className="text-center mb-8">
           <div
             className="absolute top-6 left-6 p-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 cursor-pointer hover:bg-white/10 transition"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/")}
           >
             <ArrowLeft className="w-4 h-4 text-white" />
           </div>

@@ -1,4 +1,9 @@
 import { useEffect, useState } from "react";
+import {
+  useQuery,
+  // useMutation,
+  //  useQueryClient
+} from "@tanstack/react-query";
 
 interface Standings {
   id: number;
@@ -27,6 +32,13 @@ const useFpl = (week: number) => {
   const [standingsList, setStandingsList] = useState<Standings[]>([]);
   const [weekDetails, setWeekDetails] = useState<WeekDetails[]>([]);
   const [isFetching, setIsFetching] = useState<boolean>(true);
+  const { data: seasonDetails } = useQuery({
+    queryKey: ["seasonDetails"],
+    queryFn: async () => {
+      const res = await fetch("/api/seasonDetails");
+      return res.json();
+    },
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,6 +49,7 @@ const useFpl = (week: number) => {
       });
     };
     fetchData();
+    console.log(seasonDetails);
   }, []);
 
   useEffect(() => {
@@ -86,6 +99,7 @@ const useFpl = (week: number) => {
     standingsList,
     weekDetails,
     isFetching,
+    seasonDetails,
   };
 };
 
