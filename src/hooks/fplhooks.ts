@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
-import {
-  useQuery,
-  // useMutation,
-  //  useQueryClient
-} from "@tanstack/react-query";
+import // useQuery,
+// useMutation,
+//  useQueryClient
+"@tanstack/react-query";
+import { formatDate } from "../utils/utils";
 
 interface Standings {
   id: number;
@@ -32,24 +33,45 @@ const useFpl = (week: number) => {
   const [standingsList, setStandingsList] = useState<Standings[]>([]);
   const [weekDetails, setWeekDetails] = useState<WeekDetails[]>([]);
   const [isFetching, setIsFetching] = useState<boolean>(true);
-  const { data: seasonDetails } = useQuery({
-    queryKey: ["seasonDetails"],
-    queryFn: async () => {
+  const [seasonDetails, setSeasonDetails] = useState<any[]>([]);
+  // const { data: seasonDetails } = useQuery({
+  //   queryKey: ["seasonDetails"],
+  //   queryFn: async () => {
+  //     const res = await fetch("/api/seasonDetails");
+  //     return res.json();
+  //   },
+  // });
+
+  useEffect(() => {
+    const fetchDetails = async () => {
       const res = await fetch("/api/seasonDetails");
-      return res.json();
-    },
-  });
+      const data = await res.json();
+      setSeasonDetails(data);
+    };
+    fetchDetails();
+  }, []);
+  const gameweeks = seasonDetails.map((gw, index) => ({
+    number: index + 1,
+    status: gw.finished
+      ? "completed"
+      : gw.is_current
+      ? "current"
+      : gw.is_next
+      ? "next"
+      : gw.is_previous
+      ? "previous"
+      : "future",
+    deadline: formatDate(gw.deadline_time),
+  }));
 
   useEffect(() => {
     const fetchData = async () => {
       await fetch("/api/standings?leagueId=1863884").then(async (res) => {
         const parsed = await res.json();
-        console.log(parsed.standings.results);
         setStandingsList(parsed.standings.results);
       });
     };
     fetchData();
-    console.log(seasonDetails);
   }, []);
 
   useEffect(() => {
@@ -99,7 +121,7 @@ const useFpl = (week: number) => {
     standingsList,
     weekDetails,
     isFetching,
-    seasonDetails,
+    gameweeks,
   };
 };
 

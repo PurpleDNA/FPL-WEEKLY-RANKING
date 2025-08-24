@@ -1,29 +1,24 @@
 // import { Trophy, Play, Calendar, TrendingUp, Users } from "lucide-react";
-import { TrendingUp, Users } from "lucide-react";
+import { Calendar, Play, TrendingUp, Trophy, Users } from "lucide-react";
 import { useNavigate } from "react-router";
 import useFpl from "../hooks/fplhooks";
 
 const Home = () => {
-  const gameweeks = Array.from({ length: 38 }, (_, index) => ({
-    number: index + 1,
-    status: index < 15 ? "completed" : index === 15 ? "current" : "upcoming",
-    deadline: `Dec ${20 + index} 2024`, // Sample dates
-  }));
+  const { gameweeks } = useFpl(2);
 
   const navigate = useNavigate();
-  const { seasonDetails } = useFpl(2);
-  console.log(seasonDetails);
+  // console.log(seasonDetails);
 
-  //   const getGameweekIcon = (status) => {
-  //     switch (status) {
-  //       case "completed":
-  //         return <Trophy className="w-full h-full text-green-400" />;
-  //       case "current":
-  //         return <Play className="w-full h-full text-yellow-400" />;
-  //       default:
-  //         return <Calendar className="w-full h-full text-gray-400" />;
-  //     }
-  //   };
+  const getGameweekIcon = (status: string) => {
+    switch (status) {
+      case "completed":
+        return <Trophy className="w-full h-full text-green-400" />;
+      case "current":
+        return <Play className="w-full h-full text-yellow-400" />;
+      default:
+        return <Calendar className="w-full h-full text-gray-400" />;
+    }
+  };
 
   //   const getGameweekGradient = (status) => {
   //     switch (status) {
@@ -36,16 +31,18 @@ const Home = () => {
   //     }
   //   };
 
-  //   const getStatusText = (status) => {
-  //     switch (status) {
-  //       case "completed":
-  //         return "Completed";
-  //       case "current":
-  //         return "Current";
-  //       default:
-  //         return "Upcoming";
-  //     }
-  //   };
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "Completed";
+      case "current":
+        return "Current";
+      case "next":
+        return "Next";
+      default:
+        return "Upcoming";
+    }
+  };
 
   const handleGameweekClick = (gameweekNumber: number) => {
     navigate(`/gameweek/${gameweekNumber}`);
@@ -129,10 +126,7 @@ const Home = () => {
             <div
               key={gameweek.number}
               onClick={() => handleGameweekClick(gameweek.number)}
-              className={`relative overflow-hidden rounded-2xl border border-white/10 backdrop-blur-sm
-                           bg-gradient-to-r 
-                           hover:scale-[1.02] hover:border-white/20 transition-all duration-300
-                           shadow-lg hover:shadow-xl cursor-pointer group`}
+              className={`relative overflow-hidden rounded-2xl border border-white/10 backdrop-blur-sm bg-gradient-to-r hover:scale-[1.02] hover:border-white/20 transition-all duration-300                           shadow-lg hover:shadow-xl cursor-pointer group`}
             >
               <div className="p-4 sm:p-6 flex items-center justify-between">
                 {/* Left Section */}
@@ -140,25 +134,25 @@ const Home = () => {
                   {/* Gameweek Number */}
                   <div className="flex-shrink-0">
                     <div
-                      className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center font-bold text-lg sm:text-2xl
-                                     ${
-                                       gameweek.status === "current"
-                                         ? "bg-gradient-to-br from-yellow-400/30 to-amber-300/20 text-yellow-300 border-2 border-yellow-400/30"
-                                         : gameweek.status === "completed"
-                                         ? "bg-gradient-to-br from-green-400/20 to-emerald-300/15 text-green-300 border border-green-400/20"
-                                         : "bg-slate-700/30 text-gray-300 border border-gray-600/20"
-                                     }`}
+                      className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center font-bold text-lg sm:text-2xl ${
+                        gameweek.status === "current"
+                          ? "bg-gradient-to-br from-yellow-400/30 to-amber-300/20 text-yellow-300 border-2 border-yellow-400/30"
+                          : gameweek.status === "future" ||
+                            gameweek.status === "next"
+                          ? "bg-gradient-to-br from-green-400/20 to-emerald-300/15 text-green-300 border border-green-400/20"
+                          : "bg-slate-700/30 text-gray-300 border border-gray-600/20"
+                      }`}
                     >
                       {gameweek.number}
                     </div>
                   </div>
 
                   {/* Status Icon */}
-                  {/* <div className="flex-shrink-0">
+                  <div className="flex-shrink-0">
                     <div className="w-8 h-8 sm:w-10 sm:h-10">
                       {getGameweekIcon(gameweek.status)}
                     </div>
-                  </div> */}
+                  </div>
 
                   {/* Gameweek Info */}
                   <div className="flex-1 min-w-0">
@@ -174,7 +168,7 @@ const Home = () => {
                 {/* Right Section */}
                 <div className="flex items-center space-x-4 text-right">
                   {/* Status */}
-                  {/* <div className="hidden sm:block w-20">
+                  <div className="hidden sm:block w-20">
                     <span
                       className={`text-sm font-semibold px-2 py-1 rounded-full ${
                         gameweek.status === "current"
@@ -186,7 +180,7 @@ const Home = () => {
                     >
                       {getStatusText(gameweek.status)}
                     </span>
-                  </div> */}
+                  </div>
 
                   {/* Arrow */}
                   <div className="w-8 h-8 flex items-center justify-center">
