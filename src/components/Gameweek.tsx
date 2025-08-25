@@ -43,6 +43,19 @@ const Gameweek = () => {
     return "from-green-500/15 via-emerald-400/10 to-teal-400/5";
   };
 
+  const handleNavigation = (week: number, action: string) => {
+    if (
+      (week === 1 && action === "back") ||
+      (week === 38 && action === "forward")
+    )
+      return;
+    if (action === "back") {
+      navigate(`/gameweek/${Number(week) - 1}`);
+    } else {
+      navigate(`/gameweek/${Number(week) + 1}`);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-800 py-8 px-4">
       <div className="max-w-4xl mx-auto">
@@ -60,13 +73,13 @@ const Gameweek = () => {
             <ChevronLeft
               size={35}
               className="p-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 cursor-pointer hover:bg-white/10 transition mt-1"
-              onClick={() => navigate(`/gameweek/${Number(week) - 1}`)}
+              onClick={() => handleNavigation(Number(week), "back")}
             />
             <p>Gameweek {week}</p>
             <ChevronRight
               size={35}
               className="p-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 cursor-pointer hover:bg-white/10 transition mt-1"
-              onClick={() => navigate(`/gameweek/${Number(week) + 1}`)}
+              onClick={() => handleNavigation(Number(week), "forward")}
             />
           </div>
           <div className="w-24 h-1 bg-gradient-to-r from-green-400 to-blue-500 mx-auto rounded-full"></div>
