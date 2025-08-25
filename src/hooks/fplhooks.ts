@@ -97,6 +97,20 @@ const useFpl = (week: number = 0) => {
     return gameweeks;
   }
 
+  async function fetchTop3List(): Promise<{ name: string; wins: number }[]> {
+    const winners = [];
+    for (let i = 1; i < 3; i++) {
+      const rankings = await fetchGameweekDetails(i);
+      winners.push(rankings[0].managerName);
+    }
+    console.log("winners>>>>>>>>>>>>>", winners);
+    return [
+      { name: "maroof", wins: 23 },
+      { name: "fuad", wins: 1 },
+    ];
+  }
+  fetchTop3List();
+
   const { data: gameweeks, isPending: isFetchingGWs } = useQuery({
     queryKey: ["seasonDetails"],
     queryFn: fetchSeasonDetails,
