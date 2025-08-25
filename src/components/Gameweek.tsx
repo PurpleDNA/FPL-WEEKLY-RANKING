@@ -114,7 +114,7 @@ const Gameweek = () => {
           {isFetching ? (
             <FPLSkeleton />
           ) : (
-            weekDetails.map((manager) => (
+            weekDetails?.map((manager) => (
               <div
                 key={manager.id}
                 className={`relative overflow-hidden rounded-2xl border border-white/10 backdrop-blur-sm                         bg-gradient-to-r ${getPositionGradient(
@@ -204,7 +204,7 @@ const Gameweek = () => {
           <div className="inline-flex items-center space-x-2 bg-white/5 backdrop-blur-sm rounded-full px-6 py-3 border border-white/10">
             <TrendingUp className="w-4 h-4 text-green-400" />
             <span className="text-gray-300 text-sm">
-              {weekDetails.length} managers competing
+              {weekDetails?.length} managers competing
             </span>
           </div>
         </div>

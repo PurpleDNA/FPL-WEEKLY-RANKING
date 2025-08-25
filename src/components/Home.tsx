@@ -6,8 +6,8 @@ import FPLSkeleton from "./Skeleton";
 import LoadingSkeleton from "./LoadingSkeleton";
 
 const Home = () => {
-  const { gameweeks, isLoading } = useFpl();
-  const prevGameweek = gameweeks.find((gw) => gw.status === "previous");
+  const { gameweeks, isFetchingGWs } = useFpl();
+  const prevGameweek = gameweeks?.find((gw) => gw.status === "previous");
   const { weekDetails } = useFpl(prevGameweek?.number);
 
   const navigate = useNavigate();
@@ -75,7 +75,7 @@ const Home = () => {
                   Gameweek {prevGameweek?.number} champion
                 </p>
                 <p className="text-2xl font-bold text-white">
-                  {weekDetails[0]?.managerName ? (
+                  {weekDetails && weekDetails[0]?.managerName ? (
                     weekDetails[0]?.managerName
                   ) : (
                     <LoadingSkeleton count={1} />
@@ -91,7 +91,7 @@ const Home = () => {
               <div>
                 <p className="text-sm text-gray-400">Current Gameweek</p>
                 <p className="text-2xl font-bold text-white">
-                  {gameweeks.find((gw) => gw.status === "current")?.number}
+                  {gameweeks?.find((gw) => gw.status === "current")?.number}
                 </p>
               </div>
             </div>
@@ -134,10 +134,10 @@ const Home = () => {
           </div>
         </div>
         <div className="space-y-3">
-          {isLoading ? (
+          {isFetchingGWs ? (
             <FPLSkeleton />
           ) : (
-            gameweeks.map((gameweek) => (
+            gameweeks?.map((gameweek) => (
               <div
                 key={gameweek.number}
                 onClick={() => handleGameweekClick(gameweek.number)}

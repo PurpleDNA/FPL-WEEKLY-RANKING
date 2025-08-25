@@ -1,9 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from "react";
-import // useQuery,
-// useMutation,
-//  useQueryClient
-"@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { formatDate } from "../utils/utils";
 
 interface Standings {
@@ -31,114 +26,94 @@ interface WeekDetails {
 
 interface gws {
   number: number;
-  status: "future" | "next" | "current" | "completed" | "previous";
+  status: string;
   deadline: string;
 }
 
+interface seasonDetails {
+  deadline_time: string;
+  is_next: boolean;
+  is_current: boolean;
+  finished: boolean;
+  is_previous: boolean;
+}
+
 const useFpl = (week: number = 0) => {
-  const [standingsList, setStandingsList] = useState<Standings[]>([]);
-  const [weekDetails, setWeekDetails] = useState<WeekDetails[]>([]);
-  const [isFetching, setIsFetching] = useState<boolean>(true);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [seasonDetails, setSeasonDetails] = useState<any[]>([]);
-  const [gameweeks, setGameweks] = useState<gws[]>([]);
-  // const { data: seasonDetails } = useQuery({
-  //   queryKey: ["seasonDetails"],
-  //   queryFn: async () => {
-  //     const res = await fetch("/api/seasonDetails");
-  //     return res.json();
-  //   },
-  // });
+  async function fetchGameweekDetails(gameweek: number) {
+    const res = await fetch("/api/standings?leagueId=1863884");
+    const parsed = await res.json();
+    const standingsList = parsed.standings.results as Standings[];
+    const details = (await Promise.all(
+      standingsList.map(async (manager) => {
+        const data = await fetch(`/api/history?entry=${manager.entry}`);
+        const history = await data.json();
+        const transfersCost =
+          manager.entry === 10720565
+            ? history.current[gameweek - 2]?.event_transfers_cost
+            : history.current[gameweek - 1]?.event_transfers_cost;
+        const points =
+          manager.entry === 10720565
+            ? history.current[gameweek - 2]?.points
+            : history.current[gameweek - 1]?.points;
+        return {
+          id: manager.id,
+          managerName: manager.player_name,
+          teamName: manager.entry_name,
+          points,
+          transferCost: transfersCost,
+          netPoints: points - transfersCost,
+          position: 0,
+        };
+      })
+    )) as WeekDetails[];
 
-  useEffect(() => {
-    const fetchDetails = async () => {
-      setIsLoading(true);
-      const res = await fetch("/api/seasonDetails");
-      const data = await res.json();
-      setSeasonDetails(data);
-    };
-    fetchDetails();
-  }, []);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      await fetch("/api/standings?leagueId=1863884").then(async (res) => {
-        const parsed = await res.json();
-        setStandingsList(parsed.standings.results);
+    const sortedTable = details
+      .sort((a, b) => b.netPoints - a.netPoints)
+      .map((manager, index) => {
+        return {
+          ...manager,
+          position: index + 1,
+        };
       });
-    };
-    fetchData();
-  }, []);
+    return sortedTable;
+  }
 
-  useEffect(() => {
-    const fetchGameweekDetails = async (gameweek: number) => {
-      setIsFetching(true);
-      const details = await Promise.all(
-        standingsList.map(async (manager) => {
-          const data = await fetch(`/api/history?entry=${manager.entry}`);
-          const history = await data.json();
-          const transfersCost =
-            manager.entry === 10720565
-              ? history.current[gameweek - 2]?.event_transfers_cost
-              : history.current[gameweek - 1]?.event_transfers_cost;
-          const points =
-            manager.entry === 10720565
-              ? history.current[gameweek - 2]?.points
-              : history.current[gameweek - 1]?.points;
-          return {
-            id: manager.id,
-            managerName: manager.player_name,
-            teamName: manager.entry_name,
-            points,
-            transferCost: transfersCost,
-            netPoints: points - transfersCost,
-            position: 0,
-          };
-        })
-      );
+  async function fetchSeasonDetails(): Promise<gws[]> {
+    const res = await fetch("/api/seasonDetails");
+    const results = (await res.json()) as unknown as seasonDetails[];
+    const gameweeks = results.map((gw, index) => ({
+      number: index + 1,
+      status: gw.is_previous
+        ? "previous"
+        : gw.finished
+        ? "completed"
+        : gw.is_current
+        ? "current"
+        : gw.is_next
+        ? "next"
+        : "future",
+      deadline: formatDate(gw.deadline_time),
+    }));
+    return gameweeks;
+  }
 
-      const sorted = details
-        .sort((a, b) => b.netPoints - a.netPoints)
-        .map((manager, index) => {
-          return {
-            ...manager,
-            position: index + 1,
-          };
-        });
-      console.log(sorted);
-      setWeekDetails(sorted);
-      setIsFetching(false);
-    };
+  const { data: gameweeks, isPending: isFetchingGWs } = useQuery({
+    queryKey: ["seasonDetails"],
+    queryFn: fetchSeasonDetails,
+    staleTime: 30 * 60 * 1000,
+  });
 
-    fetchGameweekDetails(week);
-  }, [standingsList, week]);
-
-  useEffect(() => {
-    if (seasonDetails.length === 0) return;
-    setGameweks(
-      seasonDetails.map((gw, index) => ({
-        number: index + 1,
-        status: gw.is_previous
-          ? "previous"
-          : gw.finished
-          ? "completed"
-          : gw.is_current
-          ? "current"
-          : gw.is_next
-          ? "next"
-          : "future",
-        deadline: formatDate(gw.deadline_time),
-      }))
-    );
-    setIsLoading(false);
-  }, [seasonDetails]);
+  const { data: weekDetails, isPending: isFetching } = useQuery<WeekDetails[]>({
+    queryKey: ["weekDetails", week],
+    queryFn: () => fetchGameweekDetails(week),
+    staleTime: 30 * 60 * 1000,
+  });
 
   return {
-    standingsList,
     weekDetails,
     isFetching,
     gameweeks,
-    isLoading,
+    isFetchingGWs,
   };
 };
 
