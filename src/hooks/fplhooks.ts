@@ -97,19 +97,38 @@ const useFpl = (week: number = 0) => {
     return gameweeks;
   }
 
-  async function fetchTop3List(): Promise<{ name: string; wins: number }[]> {
-    const winners = [];
-    for (let i = 1; i < 3; i++) {
-      const rankings = await fetchGameweekDetails(i);
-      winners.push(rankings[0].managerName);
-    }
-    console.log("winners>>>>>>>>>>>>>", winners);
-    return [
-      { name: "maroof", wins: 23 },
-      { name: "fuad", wins: 1 },
-    ];
-  }
-  fetchTop3List();
+  //Loop to fetch the top winners, works perfectly but uses too much resources, innefficient and that
+  // async function fetchTop3List(): Promise<{ name: string; wins: number }[]> {
+  //   console.log("fetching the top dawgzz, just relax a bit");
+  //   const winners = [
+  //     "Maroof Kadiri",
+  //     "Maroof Kadiri",
+  //     "Maroof Kadiri",
+  //     "Kadiri Fuad",
+  //     "Kadiri Fuad",
+  //     "Busayo Okedusi",
+  //     "Tolulope Soetan",
+  //     "Tolulope Soetan",
+  //     "Kadiri Fuad",
+  //   ];
+  //   const winnersObjects: { name: string; wins: number }[] = [];
+  //   for (let i = 1; i < 3; i++) {
+  //     const rankings = await fetchGameweekDetails(i);
+  //     winners.push(rankings[0].managerName);
+  //   }
+  //   console.log("winners>>>>>>>>>>>>>", winners);
+  //   winners.forEach((winner) => {
+  //     const exists = winnersObjects.find((w) => w.name === winner);
+  //     if (exists) {
+  //       exists.wins++;
+  //     } else {
+  //       winnersObjects.push({ name: winner, wins: 1 });
+  //     }
+  //   });
+  //   console.log("Here are your winners>>>>>>>>>>>", winnersObjects);
+  //   return winnersObjects;
+  // }
+  // fetchTop3List();
 
   const { data: gameweeks, isPending: isFetchingGWs } = useQuery({
     queryKey: ["seasonDetails"],
