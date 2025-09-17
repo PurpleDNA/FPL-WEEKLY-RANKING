@@ -7,6 +7,7 @@ import { RouterProvider } from "react-router/dom";
 import Gameweek from "./components/Gameweek.tsx";
 import Home from "./components/Home.tsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Analytics } from "@vercel/analytics/next";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
+      <Analytics />
     </QueryClientProvider>
   </StrictMode>
 );
