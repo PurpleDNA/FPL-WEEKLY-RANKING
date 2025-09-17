@@ -1,6 +1,6 @@
 import "./App.css";
 import { Outlet } from "react-router";
-import { Analytics } from "@vercel/analytics/next";
+import { Analytics } from "@vercel/analytics/react";
 function App() {
   return (
     <div>
