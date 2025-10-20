@@ -58,7 +58,7 @@ const Home = () => {
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 tracking-tight">
-            5H5K Premier League
+            5H5K Fantasy League
           </h1>
           <p className="text-gray-300 mt-4 text-lg mb-1">
             2025/26 Season Gameweeks
