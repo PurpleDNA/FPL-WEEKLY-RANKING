@@ -2,13 +2,18 @@ import { useParams, useNavigate } from "react-router";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import useFpl from "../hooks/fplhooks";
 import FPLSkeleton from "./Skeleton";
+import CrownIcon from "./CrownIcon";
+import MedalIcon from "./MedalIcon";
 import { ErrorState, TruncationNotice } from "./Notices";
 
 // Gold, silver, bronze. Full class strings so Tailwind's scanner finds them.
-const PODIUM: Record<number, { text: string; rule: string }> = {
-  1: { text: "text-gold", rule: "border-gold" },
-  2: { text: "text-chalk", rule: "border-chalk" },
-  3: { text: "text-bronze", rule: "border-bronze" },
+const PODIUM: Record<
+  number,
+  { text: string; rule: string; label: string; Icon: typeof CrownIcon }
+> = {
+  1: { text: "text-gold", rule: "border-gold", label: "Winner", Icon: CrownIcon },
+  2: { text: "text-chalk", rule: "border-chalk", label: "Second", Icon: MedalIcon },
+  3: { text: "text-bronze", rule: "border-bronze", label: "Third", Icon: MedalIcon },
 };
 
 const Gameweek = () => {
@@ -84,8 +89,9 @@ const Gameweek = () => {
           <FPLSkeleton />
         ) : weekDetails && weekDetails.length > 0 ? (
           <>
-            <div className="flex items-center gap-4 pb-2 text-xs font-semibold uppercase tracking-[0.18em] text-chalk-dim">
+            <div className="flex items-center gap-4 border-l-2 border-transparent pb-2 pl-4 text-xs font-semibold uppercase tracking-[0.18em] text-chalk-dim">
               <span className="w-6">#</span>
+              <span className="w-5" />
               <span className="flex-1">Manager</span>
               <span className="w-20 text-right">Net</span>
             </div>
@@ -98,8 +104,10 @@ const Gameweek = () => {
                 return (
                   <li
                     key={manager.entry}
-                    className={`flex items-center gap-4 py-4 ${
-                      podium ? `border-l-2 pl-4 ${podium.rule}` : ""
+                    // Every row carries the rule so the columns stay true;
+                    // only the podium gives it a colour.
+                    className={`flex items-center gap-4 border-l-2 py-4 pl-4 ${
+                      podium ? podium.rule : "border-transparent"
                     }`}
                   >
                     <span
@@ -108,6 +116,16 @@ const Gameweek = () => {
                       }`}
                     >
                       {manager.position}
+                    </span>
+
+                    {/* Fixed-width slot so rows below the podium stay aligned. */}
+                    <span className="w-5 shrink-0">
+                      {podium && (
+                        <>
+                          <podium.Icon className={`h-5 w-5 ${podium.text}`} />
+                          <span className="sr-only">{podium.label}</span>
+                        </>
+                      )}
                     </span>
 
                     <span className="min-w-0 flex-1">
