@@ -12,11 +12,16 @@ import {
 } from "lucide-react";
 import FPLSkeleton from "./Skeleton";
 import { useNavigate } from "react-router";
+import { ErrorState, TruncationNotice } from "./Notices";
 
 const Gameweek = () => {
-  const { week } = useParams();
-  const { weekDetails, isFetching } = useFpl(Number(week));
+  const { week, leagueId } = useParams();
+  const id = Number(leagueId);
+  const { weekDetails, isFetching, leagueName, leagueError, truncated, gameweeks } =
+    useFpl(Number(week), id);
   const navigate = useNavigate();
+
+  const lastGameweek = gameweeks?.length ?? 38;
 
   const getPositionIcon = (position: number) => {
     switch (position) {
@@ -46,13 +51,13 @@ const Gameweek = () => {
   const handleNavigation = (week: number, action: string) => {
     if (
       (week === 1 && action === "back") ||
-      (week === 38 && action === "forward")
+      (week === lastGameweek && action === "forward")
     )
       return;
     if (action === "back") {
-      navigate(`/gameweek/${Number(week) - 1}`);
+      navigate(`/league/${id}/gameweek/${Number(week) - 1}`);
     } else {
-      navigate(`/gameweek/${Number(week) + 1}`);
+      navigate(`/league/${id}/gameweek/${Number(week) + 1}`);
     }
   };
 
@@ -62,12 +67,12 @@ const Gameweek = () => {
         <div className="text-center mb-8">
           <div
             className="absolute top-6 left-6 p-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 cursor-pointer hover:bg-white/10 transition"
-            onClick={() => navigate("/")}
+            onClick={() => navigate(`/league/${id}`)}
           >
             <ArrowLeft className="w-4 h-4 text-white" />
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 tracking-tight">
-            5H5K Weekly Standings
+            {leagueName ? `${leagueName} — Weekly Standings` : "Weekly Standings"}
           </h1>
           <div className="text-gray-300 mt-4 text-lg mb-1 flex space-x-7 justify-center items-center">
             <ChevronLeft
@@ -122,14 +127,18 @@ const Gameweek = () => {
           </div>
         </div>
 
+        {truncated && <TruncationNotice />}
+
         {/* Standings List */}
         <div className="space-y-3">
-          {isFetching ? (
+          {leagueError ? (
+            <ErrorState message={leagueError.message} />
+          ) : isFetching ? (
             <FPLSkeleton />
           ) : (
             weekDetails?.map((manager) => (
               <div
-                key={manager.id}
+                key={manager.entry}
                 className={`relative overflow-hidden rounded-2xl border border-white/10 backdrop-blur-sm                         bg-gradient-to-r ${getPositionGradient(
                   manager.position
                 )} hover:scale-[1.02] hover:border-white/20 transition-all duration-300 shadow-lg hover:shadow-xl`}
@@ -217,7 +226,7 @@ const Gameweek = () => {
           <div className="inline-flex items-center space-x-2 bg-white/5 backdrop-blur-sm rounded-full px-6 py-3 border border-white/10">
             <TrendingUp className="w-4 h-4 text-green-400" />
             <span className="text-gray-300 text-sm">
-              {weekDetails?.length} managers competing
+              {weekDetails?.length ?? 0} managers competing
             </span>
           </div>
         </div>

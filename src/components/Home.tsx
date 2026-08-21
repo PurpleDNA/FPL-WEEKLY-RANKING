@@ -1,16 +1,44 @@
 // import { Trophy, Play, Calendar, TrendingUp, Users } from "lucide-react";
-import { Calendar, Play, TrendingUp, Trophy, Users } from "lucide-react";
-import { useNavigate } from "react-router";
+import { useEffect } from "react";
+import { ArrowLeft, Calendar, Play, TrendingUp, Trophy, Users } from "lucide-react";
+import { useNavigate, useParams } from "react-router";
 import useFpl from "../hooks/fplhooks";
+import { useSavedLeagues } from "../hooks/useSavedLeagues";
 import FPLSkeleton from "./Skeleton";
 import LoadingSkeleton from "./LoadingSkeleton";
+import { ErrorState, TruncationNotice } from "./Notices";
 
 const Home = () => {
-  const { gameweeks, isFetchingGWs } = useFpl();
-  const prevGameweek = gameweeks?.find((gw) => gw.status === "previous");
-  const { weekDetails } = useFpl(prevGameweek?.number);
+  const { leagueId } = useParams();
+  const id = Number(leagueId);
 
+  const { gameweeks, season, isFetchingGWs, gameweeksError } = useFpl(
+    undefined,
+    id,
+  );
+  const prevGameweek = gameweeks?.find((gw) => gw.status === "previous");
+  const currentGameweek = gameweeks?.find((gw) => gw.status === "current");
+  const nextGameweek = gameweeks?.find((gw) => gw.status === "next");
+  // Shares the cached league + season queries with the call above, so this
+  // second call costs no extra requests.
+  const { weekDetails, leagueName, leagueError, truncated } = useFpl(
+    prevGameweek?.number,
+    id,
+  );
+
+  const { save, markStale } = useSavedLeagues();
   const navigate = useNavigate();
+
+  // Save on success rather than on submit, so a league only lands in the list
+  // once we know it resolves — and once we know its real name.
+  useEffect(() => {
+    if (leagueName && season) save({ id, name: leagueName, season });
+  }, [id, leagueName, season, save]);
+
+  // FPL reissues mini-league IDs each season, so a saved ID can stop resolving.
+  useEffect(() => {
+    if (leagueError?.status === 404) markStale(id);
+  }, [id, leagueError, markStale]);
 
   const getGameweekIcon = (status: string) => {
     switch (status) {
@@ -50,21 +78,28 @@ const Home = () => {
   };
 
   const handleGameweekClick = (gameweekNumber: number) => {
-    navigate(`/gameweek/${gameweekNumber}`);
+    navigate(`/league/${id}/gameweek/${gameweekNumber}`);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-800 py-8 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
+          <div
+            className="absolute top-6 left-6 p-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 cursor-pointer hover:bg-white/10 transition"
+            onClick={() => navigate("/")}
+          >
+            <ArrowLeft className="w-4 h-4 text-white" />
+          </div>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 tracking-tight">
-            5H5K Fantasy League
+            {leagueName ?? (leagueError ? "League unavailable" : " ")}
           </h1>
           <p className="text-gray-300 mt-4 text-lg mb-1">
-            2025/26 Season Gameweeks
+            {season ? `${season} Season Gameweeks` : "Season Gameweeks"}
           </p>
           <div className="w-24 h-1 bg-gradient-to-r from-green-400 to-blue-500 mx-auto rounded-full"></div>
         </div>
+        {truncated && <TruncationNotice />}
         <h2 className="font-bold text-white text-lg mb-1">Stats </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
@@ -72,10 +107,16 @@ const Home = () => {
               <Trophy className="w-8 h-8 text-green-400" />
               <div>
                 <p className="text-sm text-gray-400">
-                  Gameweek {prevGameweek?.number} champion
+                  {prevGameweek
+                    ? `Gameweek ${prevGameweek.number} champion`
+                    : "Latest champion"}
                 </p>
                 <p className="text-2xl font-bold text-white">
-                  {weekDetails && weekDetails[0]?.managerName ? (
+                  {leagueError ? (
+                    "—"
+                  ) : !isFetchingGWs && !prevGameweek ? (
+                    "Not yet played"
+                  ) : weekDetails && weekDetails[0]?.managerName ? (
                     weekDetails[0]?.managerName
                   ) : (
                     <LoadingSkeleton count={1} />
@@ -89,9 +130,11 @@ const Home = () => {
             <div className="flex items-center space-x-3">
               <Play className="w-8 h-8 text-yellow-400" />
               <div>
-                <p className="text-sm text-gray-400">Current Gameweek</p>
+                <p className="text-sm text-gray-400">
+                  {currentGameweek ? "Current Gameweek" : "Next Gameweek"}
+                </p>
                 <p className="text-2xl font-bold text-white">
-                  {gameweeks?.find((gw) => gw.status === "current")?.number}
+                  {(currentGameweek ?? nextGameweek)?.number ?? "—"}
                 </p>
               </div>
             </div>
@@ -134,7 +177,11 @@ const Home = () => {
           </div>
         </div>
         <div className="space-y-3">
-          {isFetchingGWs ? (
+          {leagueError ? (
+            <ErrorState message={leagueError.message} />
+          ) : gameweeksError ? (
+            <ErrorState message={gameweeksError.message} />
+          ) : isFetchingGWs ? (
             <FPLSkeleton />
           ) : (
             gameweeks?.map((gameweek) => (
@@ -216,7 +263,7 @@ const Home = () => {
           <div className="inline-flex items-center space-x-2 bg-white/5 backdrop-blur-sm rounded-full px-6 py-3 border border-white/10">
             <Users className="w-4 h-4 text-green-400" />
             <span className="text-gray-300 text-sm">
-              2025/26 Premier League Season
+              {season ? `${season} Premier League Season` : "Premier League"}
             </span>
           </div>
         </div>
