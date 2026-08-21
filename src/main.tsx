@@ -7,6 +7,7 @@ import { RouterProvider } from "react-router/dom";
 import Gameweek from "./components/Gameweek.tsx";
 import Home from "./components/Home.tsx";
 import Leagues from "./components/Leagues.tsx";
+import RouteError from "./components/RouteError.tsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const queryClient = new QueryClient();
@@ -15,6 +16,9 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
+    // Catches render-time throws anywhere below, which would otherwise unmount
+    // the whole tree and leave a blank page.
+    errorElement: <RouteError />,
     children: [
       {
         index: true,
