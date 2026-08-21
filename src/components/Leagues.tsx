@@ -52,7 +52,9 @@ const Leagues = () => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="premierleague.com/leagues/314/standings/c"
-              className="min-w-0 flex-1 bg-transparent py-3 font-mono text-sm text-chalk placeholder:text-chalk-dim/50 focus:outline-none"
+              // text-base on phones: iOS Safari zooms the page in when a
+              // focused field is under 16px. Back to text-sm from sm up.
+              className="min-w-0 flex-1 bg-transparent py-3 font-mono text-base text-chalk placeholder:text-chalk-dim/50 focus:outline-none sm:text-sm"
             />
             <button
               type="submit"
