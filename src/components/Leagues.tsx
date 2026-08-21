@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { ArrowRight, X } from "lucide-react";
 import { useSavedLeagues } from "../hooks/useSavedLeagues";
 import { parseLeagueId } from "../utils/savedLeagues";
+import LeagueIdHelp from "./LeagueIdHelp";
 
 const Leagues = () => {
   const [input, setInput] = useState("");
@@ -67,8 +68,10 @@ const Leagues = () => {
           <p
             className={`mt-2 text-sm ${error ? "text-hit" : "text-chalk-dim"}`}
           >
-            {error || "Open your league on the FPL site and copy the address."}
+            {error}
           </p>
+
+          <LeagueIdHelp />
         </form>
 
         <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-chalk-dim">
