@@ -1,59 +1,16 @@
-// import React from "react";
-
 const FPLSkeleton = ({ rows = 8 }) => {
   return (
-    <div className="w-full max-w-6xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden animate-pulse">
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="px-4 py-3">
-                <div className="h-4 bg-gray-300 rounded w-12"></div>
-              </th>
-              <th className="px-4 py-3">
-                <div className="h-4 bg-gray-300 rounded w-24"></div>
-              </th>
-              <th className="px-4 py-3">
-                <div className="h-4 bg-gray-300 rounded w-20"></div>
-              </th>
-              <th className="px-4 py-3">
-                <div className="h-4 bg-gray-300 rounded w-16 mx-auto"></div>
-              </th>
-              <th className="px-4 py-3">
-                <div className="h-4 bg-gray-300 rounded w-20 mx-auto"></div>
-              </th>
-              <th className="px-4 py-3">
-                <div className="h-4 bg-gray-300 rounded w-16 mx-auto"></div>
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {Array.from({ length: rows }).map((_, index) => (
-              <tr key={index}>
-                <td className="px-4 py-4">
-                  <div className="h-6 bg-gray-200 rounded w-8"></div>
-                </td>
-                <td className="px-4 py-4">
-                  <div className="h-5 bg-gray-200 rounded w-32"></div>
-                </td>
-                <td className="px-4 py-4">
-                  <div className="h-5 bg-gray-200 rounded w-28"></div>
-                </td>
-                <td className="px-4 py-4">
-                  <div className="h-5 bg-gray-200 rounded w-8 mx-auto"></div>
-                </td>
-                <td className="px-4 py-4">
-                  <div className="h-5 bg-gray-200 rounded w-12 mx-auto"></div>
-                </td>
-                <td className="px-4 py-4">
-                  <div className="h-5 bg-gray-200 rounded w-16 mx-auto"></div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <div className="animate-pulse divide-y divide-line border-y border-line">
+      {Array.from({ length: rows }).map((_, index) => (
+        <div key={index} className="flex items-center gap-4 py-4">
+          <div className="h-4 w-6 rounded-sm bg-line" />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 w-40 max-w-[60%] rounded-sm bg-line" />
+            <div className="h-3 w-28 max-w-[40%] rounded-sm bg-line/60" />
+          </div>
+          <div className="h-6 w-12 rounded-sm bg-line" />
+        </div>
+      ))}
     </div>
   );
 };

@@ -2,10 +2,12 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.tsx";
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import Gameweek from "./components/Gameweek.tsx";
 import Home from "./components/Home.tsx";
+import Leagues from "./components/Leagues.tsx";
+import RouteError from "./components/RouteError.tsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const queryClient = new QueryClient();
@@ -14,14 +16,25 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
+    // Catches render-time throws anywhere below, which would otherwise unmount
+    // the whole tree and leave a blank page.
+    errorElement: <RouteError />,
     children: [
       {
         index: true,
+        element: <Leagues />,
+      },
+      {
+        path: "league/:leagueId",
         element: <Home />,
       },
       {
-        path: "gameweek/:week",
+        path: "league/:leagueId/gameweek/:week",
         element: <Gameweek />,
+      },
+      {
+        path: "*",
+        element: <Navigate to="/" replace />,
       },
     ],
   },

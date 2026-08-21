@@ -1,24 +1,29 @@
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { formatDate } from "../utils/utils";
 
-interface Standings {
-  id: number;
-  event_total: number;
-  player_name: string;
-  rank: number;
-  last_rank: number;
-  rank_sort: number;
-  total: number;
+export type FplError = Error & { status?: number };
+
+interface ManagerSeason {
   entry: number;
-  entry_name: string;
-  has_played: boolean;
+  manager: string;
+  team: string;
+  // Keyed by gameweek number: [points, transferCost]. A missing key means the
+  // manager did not play that gameweek.
+  gws: Record<number, [number, number] | undefined>;
 }
 
-interface WeekDetails {
-  id: number;
+interface LeagueResponse {
+  league: { id: number; name: string };
+  truncated: boolean;
+  managers: ManagerSeason[];
+}
+
+export interface WeekDetails {
+  entry: number;
   managerName: string;
   teamName: string;
-  points: string;
+  points: number;
   transferCost: number;
   netPoints: number;
   position: number;
@@ -30,6 +35,11 @@ interface gws {
   deadline: string;
 }
 
+interface SeasonData {
+  gameweeks: gws[];
+  season: string;
+}
+
 interface seasonDetails {
   deadline_time: string;
   is_next: boolean;
@@ -38,115 +48,124 @@ interface seasonDetails {
   is_previous: boolean;
 }
 
-const useFpl = (week: number = 0) => {
-  async function fetchGameweekDetails(gameweek: number) {
-    const res = await fetch("/api/standings?leagueId=1863884");
-    const parsed = await res.json();
-    const standingsList = parsed.standings.results as Standings[];
-    const details = (await Promise.all(
-      standingsList.map(async (manager) => {
-        const data = await fetch(`/api/history?entry=${manager.entry}`);
-        const history = await data.json();
-        const transfersCost =
-          manager.entry === 10720565
-            ? history.current[gameweek - 2]?.event_transfers_cost
-            : history.current[gameweek - 1]?.event_transfers_cost;
-        const points =
-          manager.entry === 10720565
-            ? history.current[gameweek - 2]?.points
-            : history.current[gameweek - 1]?.points;
-        return {
-          id: manager.id,
-          managerName: manager.player_name,
-          teamName: manager.entry_name,
-          points,
-          transferCost: transfersCost,
-          netPoints: points - transfersCost,
-          position: 0,
-        };
-      })
-    )) as WeekDetails[];
-
-    const sortedTable = details
-      .sort((a, b) => b.netPoints - a.netPoints)
-      .map((manager, index) => {
-        return {
-          ...manager,
-          position: index + 1,
-        };
-      });
-    return sortedTable;
+async function fetchLeague(leagueId: number): Promise<LeagueResponse> {
+  const res = await fetch(`/api/league?leagueId=${leagueId}`);
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    const error: FplError = new Error(
+      body.error ?? "Could not load this league",
+    );
+    error.status = res.status;
+    throw error;
   }
+  return res.json();
+}
 
-  async function fetchSeasonDetails(): Promise<gws[]> {
-    const res = await fetch("/api/seasonDetails");
-    const results = (await res.json()) as unknown as seasonDetails[];
-    const gameweeks = results.map((gw, index) => ({
-      number: index + 1,
-      status: gw.is_previous
-        ? "previous"
-        : gw.finished
+async function fetchSeasonDetails(): Promise<SeasonData> {
+  const res = await fetch("/api/seasonDetails");
+  if (!res.ok) throw new Error("Could not load the season calendar");
+
+  const results = (await res.json()) as unknown as seasonDetails[];
+  const gameweeks = results.map((gw, index) => ({
+    number: index + 1,
+    status: gw.is_previous
+      ? "previous"
+      : gw.finished
         ? "completed"
         : gw.is_current
-        ? "current"
-        : gw.is_next
-        ? "next"
-        : "future",
-      deadline: formatDate(gw.deadline_time),
-    }));
-    return gameweeks;
-  }
+          ? "current"
+          : gw.is_next
+            ? "next"
+            : "future",
+    deadline: formatDate(gw.deadline_time),
+  }));
 
-  //Loop to fetch the top winners, works perfectly but uses too much resources, innefficient and that
-  // async function fetchTop3List(): Promise<{ name: string; wins: number }[]> {
-  //   console.log("fetching the top dawgzz, just relax a bit");
-  //   const winners = [
-  //     "Maroof Kadiri",
-  //     "Maroof Kadiri",
-  //     "Maroof Kadiri",
-  //     "Kadiri Fuad",
-  //     "Kadiri Fuad",
-  //     "Busayo Okedusi",
-  //     "Tolulope Soetan",
-  //     "Tolulope Soetan",
-  //     "Kadiri Fuad",
-  //   ];
-  //   const winnersObjects: { name: string; wins: number }[] = [];
-  //   for (let i = 1; i < 3; i++) {
-  //     const rankings = await fetchGameweekDetails(i);
-  //     winners.push(rankings[0].managerName);
-  //   }
-  //   console.log("winners>>>>>>>>>>>>>", winners);
-  //   winners.forEach((winner) => {
-  //     const exists = winnersObjects.find((w) => w.name === winner);
-  //     if (exists) {
-  //       exists.wins++;
-  //     } else {
-  //       winnersObjects.push({ name: winner, wins: 1 });
-  //     }
-  //   });
-  //   console.log("Here are your winners>>>>>>>>>>>", winnersObjects);
-  //   return winnersObjects;
-  // }
-  // fetchTop3List();
+  // GW1's deadline falls in the opening year of the season, e.g. a 2026-08-21
+  // deadline means the 2026/27 season.
+  const startYear = results[0]
+    ? new Date(results[0].deadline_time).getFullYear()
+    : null;
+  const season = startYear
+    ? `${startYear}/${String(startYear + 1).slice(2)}`
+    : "";
 
-  const { data: gameweeks, isPending: isFetchingGWs } = useQuery({
+  return { gameweeks, season };
+}
+
+// A manager's whole season arrives in one payload, so each gameweek table is
+// derived from it locally — moving between gameweeks costs no extra requests.
+function buildWeekTable(
+  league: LeagueResponse | undefined,
+  week: number | undefined,
+): WeekDetails[] | undefined {
+  if (!league || !week) return undefined;
+
+  return league.managers
+    .flatMap((manager) => {
+      const gw = manager.gws[week];
+      if (!gw) return [];
+
+      const [points, transferCost] = gw;
+      return [
+        {
+          entry: manager.entry,
+          managerName: manager.manager,
+          teamName: manager.team,
+          points,
+          transferCost,
+          netPoints: points - transferCost,
+          position: 0,
+        },
+      ];
+    })
+    .sort((a, b) => b.netPoints - a.netPoints)
+    .map((manager, index) => ({ ...manager, position: index + 1 }));
+}
+
+const useFpl = (week?: number, leagueId?: number) => {
+  const {
+    data: seasonData,
+    isPending: isFetchingGWs,
+    error: gameweeksError,
+  } = useQuery({
     queryKey: ["seasonDetails"],
     queryFn: fetchSeasonDetails,
     staleTime: 30 * 60 * 1000,
   });
 
-  const { data: weekDetails, isPending: isFetching } = useQuery<WeekDetails[]>({
-    queryKey: ["weekDetails", week],
-    queryFn: () => fetchGameweekDetails(week),
+  const {
+    data: league,
+    isPending: isFetching,
+    error: leagueError,
+  } = useQuery<LeagueResponse, FplError>({
+    queryKey: ["league", leagueId],
+    queryFn: () => fetchLeague(leagueId as number),
+    enabled: Boolean(leagueId),
     staleTime: 30 * 60 * 1000,
+    // A missing or private league is a settled answer, not a blip. Retrying it
+    // leaves the page looking healthy for seconds before the error lands.
+    retry: (failureCount, error) => {
+      const status = error.status ?? 0;
+      if (status >= 400 && status < 500) return false;
+      return failureCount < 2;
+    },
   });
+
+  const weekDetails = useMemo(
+    () => buildWeekTable(league, week),
+    [league, week],
+  );
 
   return {
     weekDetails,
     isFetching,
-    gameweeks,
+    leagueError,
+    leagueName: league?.league.name,
+    truncated: league?.truncated ?? false,
+    gameweeks: seasonData?.gameweeks,
+    season: seasonData?.season,
     isFetchingGWs,
+    gameweeksError,
   };
 };
 

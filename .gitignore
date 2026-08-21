@@ -23,5 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 
+# .vercel holds the local project link, not config worth sharing.
+# vercel.json is deliberately NOT ignored — it carries rewrites, headers and
+# cron config that have to be committed to take effect on deploy.
 .vercel
-vercel.json
