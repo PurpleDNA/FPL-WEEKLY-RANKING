@@ -4,6 +4,13 @@ import useFpl from "../hooks/fplhooks";
 import FPLSkeleton from "./Skeleton";
 import { ErrorState, TruncationNotice } from "./Notices";
 
+// Gold, silver, bronze. Full class strings so Tailwind's scanner finds them.
+const PODIUM: Record<number, { text: string; rule: string }> = {
+  1: { text: "text-gold", rule: "border-gold" },
+  2: { text: "text-chalk", rule: "border-chalk" },
+  3: { text: "text-bronze", rule: "border-bronze" },
+};
+
 const Gameweek = () => {
   const { week, leagueId } = useParams();
   const id = Number(leagueId);
@@ -86,17 +93,18 @@ const Gameweek = () => {
             <ul className="divide-y divide-line border-y border-line">
               {weekDetails.map((manager) => {
                 const isLeader = manager.position === 1;
+                const podium = PODIUM[manager.position];
 
                 return (
                   <li
                     key={manager.entry}
                     className={`flex items-center gap-4 py-4 ${
-                      isLeader ? "border-l-2 border-gold pl-4" : ""
+                      podium ? `border-l-2 pl-4 ${podium.rule}` : ""
                     }`}
                   >
                     <span
                       className={`tnum w-6 shrink-0 font-mono ${
-                        isLeader ? "text-gold" : "text-chalk-dim"
+                        podium ? podium.text : "text-chalk-dim"
                       }`}
                     >
                       {manager.position}

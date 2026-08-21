@@ -15,6 +15,9 @@ export default {
         // Semantic, not decorative: gold marks the leader, red marks a
         // deduction (football's own colour for a penalty).
         gold: "#F2B441",
+        // Third place. Second needs no token — chalk already reads as silver
+        // against the dimmed rows below it.
+        bronze: "#B87A4B",
         hit: "#E5544B",
       },
       fontFamily: {
