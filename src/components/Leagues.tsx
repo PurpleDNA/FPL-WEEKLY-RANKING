@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { ArrowRight, Trophy, X } from "lucide-react";
+import { ArrowRight, X } from "lucide-react";
 import { useSavedLeagues } from "../hooks/useSavedLeagues";
 import { parseLeagueId } from "../utils/savedLeagues";
 
@@ -15,7 +15,7 @@ const Leagues = () => {
 
     const leagueId = parseLeagueId(input);
     if (!leagueId) {
-      setError("Paste an FPL league link, or enter the league ID on its own.");
+      setError("That doesn't look like a league link or ID.");
       return;
     }
 
@@ -24,101 +24,94 @@ const Leagues = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-800 py-8 px-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 tracking-tight">
-            FPL Pulse
+    <div className="min-h-screen px-5 py-16 sm:py-24">
+      <div className="mx-auto max-w-xl">
+        <header className="mb-14">
+          <h1 className="text-5xl font-extrabold uppercase leading-[0.9] tracking-tight sm:text-6xl">
+            FPL
+            <br />
+            Pulse
           </h1>
-          <p className="text-gray-300 mt-4 text-lg mb-1">
-            Gameweek standings by net points, for any FPL mini-league
+          <p className="mt-5 max-w-sm text-chalk-dim">
+            Weekly mini-league standings ranked by net points — after your
+            transfer hits come off.
           </p>
-          <div className="w-24 h-1 bg-gradient-to-r from-green-400 to-blue-500 mx-auto rounded-full"></div>
-        </div>
+        </header>
 
-        <form onSubmit={handleSubmit} className="mb-10">
+        <form onSubmit={handleSubmit} className="mb-14">
           <label
             htmlFor="league"
-            className="block text-sm text-gray-400 mb-2 uppercase tracking-wide"
+            className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-chalk-dim"
           >
             League link or ID
           </label>
-          <div className="flex space-x-2">
+          <div className="flex border-b border-line focus-within:border-chalk-dim">
             <input
               id="league"
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="fantasy.premierleague.com/leagues/314/standings/c"
-              className="flex-1 min-w-0 rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:border-green-400/50 transition"
+              placeholder="premierleague.com/leagues/314/standings/c"
+              className="min-w-0 flex-1 bg-transparent py-3 font-mono text-sm text-chalk placeholder:text-chalk-dim/50 focus:outline-none"
             />
             <button
               type="submit"
-              className="flex-shrink-0 rounded-xl bg-gradient-to-r from-green-400 to-blue-500 px-5 py-3 font-semibold text-slate-900 hover:opacity-90 transition"
+              aria-label="Open league"
+              className="px-2 text-chalk-dim transition-colors hover:text-gold"
             >
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="h-5 w-5" />
             </button>
           </div>
-          {error ? (
-            <p className="text-red-400 text-sm mt-2">{error}</p>
-          ) : (
-            <p className="text-gray-500 text-sm mt-2">
-              Open your league on the FPL site and copy the address.
-            </p>
-          )}
+          <p
+            className={`mt-2 text-sm ${error ? "text-hit" : "text-chalk-dim"}`}
+          >
+            {error || "Open your league on the FPL site and copy the address."}
+          </p>
         </form>
 
-        <h2 className="font-bold text-white text-lg mb-3">Your leagues</h2>
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-chalk-dim">
+          Your leagues
+        </h2>
 
         {leagues.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-6 text-center">
-            <Trophy className="w-8 h-8 text-gray-500 mx-auto mb-3" />
-            <p className="text-gray-400 text-sm">
-              Leagues you open will be saved here.
-            </p>
-          </div>
+          <p className="border-t border-line py-6 text-sm text-chalk-dim">
+            Leagues you open are saved here.
+          </p>
         ) : (
-          <div className="space-y-3">
+          <ul className="divide-y divide-line border-y border-line">
             {leagues.map((league) => (
-              <div
-                key={league.id}
-                onClick={() => navigate(`/league/${league.id}`)}
-                className="relative overflow-hidden rounded-2xl border border-white/10 backdrop-blur-sm bg-white/5 hover:scale-[1.02] hover:border-white/20 transition-all duration-300 shadow-lg cursor-pointer group"
-              >
-                <div className="p-4 sm:p-5 flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <h3
-                      className={`text-lg sm:text-xl font-bold truncate leading-tight transition-colors ${
-                        league.stale
-                          ? "text-gray-500"
-                          : "text-white group-hover:text-green-300"
-                      }`}
-                    >
-                      {league.name}
-                    </h3>
-                    <p className="text-sm text-gray-400 truncate leading-tight">
-                      {league.stale
-                        ? `Unavailable — saved in ${league.season}, may be from a past season`
-                        : `${league.season} season · ID ${league.id}`}
-                    </p>
-                  </div>
-
-                  <button
-                    type="button"
-                    aria-label={`Remove ${league.name}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      remove(league.id);
-                    }}
-                    className="flex-shrink-0 ml-4 p-2 rounded-full text-gray-500 hover:text-white hover:bg-white/10 transition"
+              <li key={league.id} className="group flex items-center">
+                <button
+                  type="button"
+                  onClick={() => navigate(`/league/${league.id}`)}
+                  className="flex-1 py-4 text-left"
+                >
+                  <span
+                    className={`block font-semibold transition-colors ${
+                      league.stale
+                        ? "text-chalk-dim"
+                        : "text-chalk group-hover:text-gold"
+                    }`}
                   >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-              </div>
+                    {league.name}
+                  </span>
+                  <span className="mt-0.5 block font-mono text-xs text-chalk-dim">
+                    {league.stale
+                      ? `Unavailable — saved in ${league.season}`
+                      : `${league.season} · ${league.id}`}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Remove ${league.name}`}
+                  onClick={() => remove(league.id)}
+                  className="p-2 text-chalk-dim/50 transition-colors hover:text-hit"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </div>
     </div>

@@ -1,6 +1,5 @@
-// import { Trophy, Play, Calendar, TrendingUp, Users } from "lucide-react";
 import { useEffect } from "react";
-import { ArrowLeft, Calendar, Play, TrendingUp, Trophy, Users } from "lucide-react";
+import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
 import useFpl from "../hooks/fplhooks";
 import { useSavedLeagues } from "../hooks/useSavedLeagues";
@@ -19,6 +18,7 @@ const Home = () => {
   const prevGameweek = gameweeks?.find((gw) => gw.status === "previous");
   const currentGameweek = gameweeks?.find((gw) => gw.status === "current");
   const nextGameweek = gameweeks?.find((gw) => gw.status === "next");
+
   // Shares the cached league + season queries with the call above, so this
   // second call costs no extra requests.
   const { weekDetails, leagueName, leagueError, truncated } = useFpl(
@@ -40,233 +40,128 @@ const Home = () => {
     if (leagueError?.status === 404) markStale(id);
   }, [id, leagueError, markStale]);
 
-  const getGameweekIcon = (status: string) => {
-    switch (status) {
-      case "completed":
-      case "previous":
-        return <Trophy className=" text-green-400" size={32} />;
-      case "current":
-        return <Play className=" text-yellow-400" size={32} />;
-      default:
-        return <Calendar className=" text-gray-400" size={32} />;
-    }
-  };
-
-  //   const getGameweekGradient = (status) => {
-  //     switch (status) {
-  //       case "completed":
-  //         return "from-green-500/15 via-emerald-400/10 to-teal-400/5";
-  //       case "current":
-  //         return "from-yellow-400/20 via-amber-300/15 to-yellow-500/10";
-  //       default:
-  //         return "from-slate-600/15 via-slate-500/10 to-slate-600/5";
-  //     }
-  //   };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "completed":
-      case "previous":
-        return "Completed";
-      case "current":
-        return "Current";
-      case "next":
-        return "Next";
-      default:
-        return "Upcoming";
-    }
-  };
-
-  const handleGameweekClick = (gameweekNumber: number) => {
-    navigate(`/league/${id}/gameweek/${gameweekNumber}`);
-  };
+  const champion = weekDetails?.[0]?.managerName;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-800 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <div
-            className="absolute top-6 left-6 p-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 cursor-pointer hover:bg-white/10 transition"
-            onClick={() => navigate("/")}
-          >
-            <ArrowLeft className="w-4 h-4 text-white" />
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 tracking-tight">
+    <div className="min-h-screen px-5 py-12 sm:py-16">
+      <div className="mx-auto max-w-2xl">
+        <button
+          type="button"
+          onClick={() => navigate("/")}
+          className="mb-10 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-chalk-dim transition-colors hover:text-chalk"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          All leagues
+        </button>
+
+        <header className="mb-12">
+          <p className="mb-2 font-mono text-xs uppercase tracking-[0.18em] text-chalk-dim">
+            {season ? `${season} season` : " "}
+          </p>
+          <h1 className="text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl">
             {leagueName ?? (leagueError ? "League unavailable" : " ")}
           </h1>
-          <p className="text-gray-300 mt-4 text-lg mb-1">
-            {season ? `${season} Season Gameweeks` : "Season Gameweeks"}
-          </p>
-          <div className="w-24 h-1 bg-gradient-to-r from-green-400 to-blue-500 mx-auto rounded-full"></div>
-        </div>
+        </header>
+
         {truncated && <TruncationNotice />}
-        <h2 className="font-bold text-white text-lg mb-1">Stats </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-            <div className="flex items-center space-x-3">
-              <Trophy className="w-8 h-8 text-green-400" />
-              <div>
-                <p className="text-sm text-gray-400">
-                  {prevGameweek
-                    ? `Gameweek ${prevGameweek.number} champion`
-                    : "Latest champion"}
-                </p>
-                <p className="text-2xl font-bold text-white">
-                  {leagueError ? (
-                    "—"
-                  ) : !isFetchingGWs && !prevGameweek ? (
-                    "Not yet played"
-                  ) : weekDetails && weekDetails[0]?.managerName ? (
-                    weekDetails[0]?.managerName
-                  ) : (
-                    <LoadingSkeleton count={1} />
-                  )}
-                </p>
-              </div>
+
+        <div className="mb-12 grid grid-cols-2 gap-px border border-line bg-line">
+          <div className="bg-pitch p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-chalk-dim">
+              {prevGameweek ? `GW${prevGameweek.number} winner` : "Last winner"}
+            </p>
+            <div className="mt-2 text-xl font-semibold text-gold">
+              {leagueError ? (
+                "—"
+              ) : !isFetchingGWs && !prevGameweek ? (
+                <span className="text-chalk-dim">Not played yet</span>
+              ) : champion ? (
+                champion
+              ) : (
+                <LoadingSkeleton count={1} />
+              )}
             </div>
           </div>
 
-          <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-            <div className="flex items-center space-x-3">
-              <Play className="w-8 h-8 text-yellow-400" />
-              <div>
-                <p className="text-sm text-gray-400">
-                  {currentGameweek ? "Current Gameweek" : "Next Gameweek"}
-                </p>
-                <p className="text-2xl font-bold text-white">
-                  {(currentGameweek ?? nextGameweek)?.number ?? "—"}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-            <div className="flex items-center space-x-3">
-              <Calendar className="w-8 h-8 text-gray-400" />
-              <div>
-                <p className="text-2xl font-bold text-white">22</p>
-                <p className="text-sm text-gray-400">Upcoming</p>
-              </div>
-            </div>
-          </div> */}
-        </div>
-        {/* Column Headers */}
-        <div className="mb-4 px-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4 flex-1">
-              <div className="w-16 sm:w-20 text-center">
-                <span className="text-xs text-gray-400 uppercase tracking-wide">
-                  GW
-                </span>
-              </div>
-              <div className="w-8 sm:w-10"></div>
-              <div className="flex-1">
-                <span className="text-xs text-gray-400 uppercase tracking-wide">
-                  Gameweek
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4 text-right">
-              <div className="hidden sm:block w-20">
-                <span className="text-xs text-gray-400 uppercase tracking-wide">
-                  Status
-                </span>
-              </div>
-              <div className="w-8"></div>
-            </div>
+          <div className="bg-pitch p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-chalk-dim">
+              {currentGameweek ? "Current" : "Next up"}
+            </p>
+            <p className="tnum mt-2 font-mono text-xl font-semibold">
+              {(currentGameweek ?? nextGameweek)?.number ?? "—"}
+            </p>
           </div>
         </div>
-        <div className="space-y-3">
-          {leagueError ? (
-            <ErrorState message={leagueError.message} />
-          ) : gameweeksError ? (
-            <ErrorState message={gameweeksError.message} />
-          ) : isFetchingGWs ? (
-            <FPLSkeleton />
-          ) : (
-            gameweeks?.map((gameweek) => (
-              <div
-                key={gameweek.number}
-                onClick={() => handleGameweekClick(gameweek.number)}
-                className={`relative overflow-hidden rounded-2xl border border-white/10 backdrop-blur-sm bg-gradient-to-r hover:scale-[1.02] hover:border-white/20 transition-all duration-300                           shadow-lg hover:shadow-xl cursor-pointer group`}
-              >
-                <div className="p-4 sm:p-6 flex items-center justify-between">
-                  {/* Left Section */}
-                  <div className="flex items-center space-x-4 flex-1">
-                    {/* Gameweek Number */}
-                    <div className="flex-shrink-0">
-                      <div
-                        className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center font-bold text-lg sm:text-2xl ${
-                          gameweek.status === "current"
-                            ? "bg-gradient-to-br from-yellow-400/30 to-amber-300/20 text-yellow-300 border-2 border-yellow-400/30"
-                            : gameweek.status === "future" ||
-                              gameweek.status === "next"
-                            ? "bg-gradient-to-br from-green-400/20 to-emerald-300/15 text-green-300 border border-green-400/20"
-                            : "bg-slate-700/30 text-gray-300 border border-gray-600/20"
-                        }`}
-                      >
-                        {gameweek.number}
-                      </div>
-                    </div>
 
-                    {/* Status Icon */}
-                    <div className="flex-shrink-0">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10">
-                        {getGameweekIcon(gameweek.status)}
-                      </div>
-                    </div>
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-chalk-dim">
+          Gameweeks
+        </h2>
 
-                    {/* Gameweek Info */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-lg sm:text-2xl font-bold text-white truncate leading-tight group-hover:text-green-300 transition-colors">
-                        Gameweek {gameweek.number}
-                      </h3>
-                      <p className="text-sm sm:text-base text-gray-300 truncate leading-tight">
-                        {gameweek.deadline}
-                      </p>
-                    </div>
-                  </div>
+        {leagueError ? (
+          <ErrorState message={leagueError.message} />
+        ) : gameweeksError ? (
+          <ErrorState message={gameweeksError.message} />
+        ) : isFetchingGWs ? (
+          <FPLSkeleton />
+        ) : (
+          <ul className="divide-y divide-line border-y border-line">
+            {gameweeks?.map((gameweek) => {
+              const isCurrent = gameweek.status === "current";
+              const played =
+                gameweek.status === "completed" ||
+                gameweek.status === "previous";
 
-                  {/* Right Section */}
-                  <div className="flex items-center space-x-4 text-right">
-                    {/* Status */}
-                    <div className="hidden sm:block w-20">
+              return (
+                <li key={gameweek.number}>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigate(`/league/${id}/gameweek/${gameweek.number}`)
+                    }
+                    className={`group flex w-full items-center gap-4 py-4 text-left ${
+                      isCurrent ? "border-l-2 border-gold pl-4" : ""
+                    }`}
+                  >
+                    <span
+                      className={`tnum w-8 font-mono text-lg ${
+                        isCurrent
+                          ? "text-gold"
+                          : played
+                            ? "text-chalk"
+                            : "text-chalk-dim"
+                      }`}
+                    >
+                      {gameweek.number}
+                    </span>
+
+                    <span className="flex-1">
                       <span
-                        className={`text-sm font-semibold px-2 py-1 rounded-full ${
-                          gameweek.status === "current"
-                            ? "bg-yellow-400/20 text-yellow-300"
-                            : gameweek.status === "completed" ||
-                              gameweek.status === "previous"
-                            ? "bg-green-400/20 text-green-300"
-                            : "bg-gray-600/20 text-gray-400"
+                        className={`block font-semibold transition-colors ${
+                          played || isCurrent
+                            ? "text-chalk group-hover:text-gold"
+                            : "text-chalk-dim"
                         }`}
                       >
-                        {getStatusText(gameweek.status)}
+                        Gameweek {gameweek.number}
                       </span>
-                    </div>
+                      <span className="mt-0.5 block font-mono text-xs text-chalk-dim">
+                        {gameweek.deadline}
+                      </span>
+                    </span>
 
-                    {/* Arrow */}
-                    <div className="w-8 h-8 flex items-center justify-center">
-                      <TrendingUp className="w-5 h-5 text-gray-400 group-hover:text-green-400 group-hover:translate-x-1 transition-all duration-200" />
-                    </div>
-                  </div>
-                </div>
+                    {isCurrent && (
+                      <span className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">
+                        Live
+                      </span>
+                    )}
 
-                {/* Bottom gradient line */}
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-              </div>
-            ))
-          )}
-        </div>
-        {/* Footer */}
-        <div className="mt-8 text-center">
-          <div className="inline-flex items-center space-x-2 bg-white/5 backdrop-blur-sm rounded-full px-6 py-3 border border-white/10">
-            <Users className="w-4 h-4 text-green-400" />
-            <span className="text-gray-300 text-sm">
-              {season ? `${season} Premier League Season` : "Premier League"}
-            </span>
-          </div>
-        </div>
+                    <ArrowUpRight className="h-4 w-4 shrink-0 text-chalk-dim/40 transition-colors group-hover:text-gold" />
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </div>
     </div>
   );

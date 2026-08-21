@@ -1,9 +1,6 @@
 const LoadingSkeleton = ({ count }: { count: number }) => {
   return Array.from({ length: count }).map((_, key) => (
-    <div
-      key={key}
-      className="w-48 h-4 bg-gray-300 dark:bg-gray-700 rounded-full animate-pulse"
-    ></div>
+    <div key={key} className="h-6 w-32 max-w-full animate-pulse rounded-sm bg-line" />
   ));
 };
 
