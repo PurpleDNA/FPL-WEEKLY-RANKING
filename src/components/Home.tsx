@@ -5,6 +5,7 @@ import useFpl from "../hooks/fplhooks";
 import { useSavedLeagues } from "../hooks/useSavedLeagues";
 import FPLSkeleton from "./Skeleton";
 import LoadingSkeleton from "./LoadingSkeleton";
+import CrownIcon from "./CrownIcon";
 import { ErrorState, TruncationNotice } from "./Notices";
 
 const Home = () => {
@@ -153,6 +154,13 @@ const Home = () => {
                       <span className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">
                         Live
                       </span>
+                    )}
+
+                    {played && (
+                      <>
+                        <CrownIcon className="h-5 w-5 shrink-0 text-gold" />
+                        <span className="sr-only">Completed</span>
+                      </>
                     )}
 
                     <ArrowUpRight className="h-4 w-4 shrink-0 text-chalk-dim/40 transition-colors group-hover:text-gold" />
